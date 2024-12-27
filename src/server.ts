@@ -20,7 +20,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use("/api/users", userRoutes);
-app.use("/api/", articleRoutes);
+app.use("/api/articles", articleRoutes);
 
 connectDB().then(() => {
   app.listen(PORT, () => {

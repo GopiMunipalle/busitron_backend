@@ -5,12 +5,15 @@ import { Request, Response } from "express";
 export async function createArticle(req: Request, res: Response) {
   try {
     const { title, content, author } = req.body;
+    console.log(req.body);
     if (!title || !content || !author) {
-      return res.status(400).json({ error: "All fields are required" });
+      res.status(400).json({ error: "All fields are required" });
+      return;
     }
     const user = await User.findById(author);
     if (!user) {
-      return res.status(400).json({ error: "User not found" });
+      res.status(400).json({ error: "User not found" });
+      return;
     }
     const article = await Article.create({ title, content, author });
     res.status(201).json({ data: article });
@@ -54,6 +57,38 @@ export async function getArticles(req: Request, res: Response) {
     res.status(200).json(articles);
   } catch (error: any) {
     console.log(error);
+    res.status(500).json({ error: error.message });
+  }
+}
+
+export async function addToFavorites(req: Request, res: Response) {
+  try {
+    const article = await Article.findById(req.params.id);
+    if (!article) {
+      res.status(400).json({ error: "Article not found" });
+      return;
+    }
+    article.history = false;
+    article.favorites = true;
+    await article.save();
+    res.status(200).json({ message: "Article added to favorites" });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
+export async function addToHistory(req: Request, res: Response) {
+  try {
+    const article = await Article.findById(req.params.id);
+    if (!article) {
+      res.status(400).json({ error: "Article not found" });
+      return;
+    }
+    article.favorites = false;
+    article.history = true;
+    await article.save();
+    res.status(200).json({ message: "Article removed from favorites" });
+  } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
 }
